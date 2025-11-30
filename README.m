@@ -1,3 +1,14 @@
+# Dragon War
+- ✅ Estruturas 
+- ✅ Ponteiros
+- ✅ Funcoes
+- ✅ Loops e condicionais
+- ✅ Manipulacao de strings
+- ✅ Entrada e saida
+- ✅ Numeros aleatorios
+
+Um jogo de batalha entre dragoes
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
