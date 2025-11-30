@@ -1,0 +1,256 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_DRAGOES 10
+#define MAX_NOME 50
+
+// Estrutura para representar um dragão
+typedef struct {
+    char nome[MAX_NOME];
+    int forca;
+    int vida;
+    int defesa;
+    int velocidade;
+} Dragao;
+
+// Estrutura para representar um jogador
+typedef struct {
+    char nome[MAX_NOME];
+    Dragao dragoes[MAX_DRAGOES];
+    int num_dragoes;
+    int pontos;
+} Jogador;
+
+// Funções do jogo
+void inicializarJogo();
+void criarDragoes(Jogador *jogador);
+void mostrarDragoes(Jogador jogador);
+void batalha(Jogador *jogador1, Jogador *jogador2);
+Dragao criarDragao(char *nome);
+int calcularDano(Dragao atacante, Dragao defensor);
+void menuPrincipal();
+
+// Variáveis globais
+Jogador jogador1, jogador2;
+
+int main() {
+    srand(time(NULL));
+    printf("=== DRAGON WAR ===\n");
+    menuPrincipal();
+    return 0;
+}
+
+void menuPrincipal() {
+    int opcao;
+    
+    do {
+        printf("\n=== MENU PRINCIPAL ===\n");
+        printf("1. Iniciar Novo Jogo\n");
+        printf("2. Sair\n");
+        printf("Escolha uma opcao: ");
+        scanf("%d", &opcao);
+        
+        switch(opcao) {
+            case 1:
+                inicializarJogo();
+                break;
+            case 2:
+                printf("Obrigado por jogar Dragon War!\n");
+                break;
+            default:
+                printf("Opcao invalida!\n");
+        }
+    } while(opcao != 2);
+}
+
+void inicializarJogo() {
+    // Inicializar jogadores
+    printf("\n=== CONFIGURACAO DO JOGO ===\n");
+    
+    printf("Nome do Jogador 1: ");
+    scanf("%s", jogador1.nome);
+    printf("Nome do Jogador 2: ");
+    scanf("%s", jogador2.nome);
+    
+    jogador1.num_dragoes = 0;
+    jogador2.num_dragoes = 0;
+    jogador1.pontos = 0;
+    jogador2.pontos = 0;
+    
+    // Criar dragões para cada jogador
+    printf("\n%s, crie seus dragoes:\n", jogador1.nome);
+    criarDragoes(&jogador1);
+    
+    printf("\n%s, crie seus dragoes:\n", jogador2.nome);
+    criarDragoes(&jogador2);
+    
+    // Iniciar batalha
+    batalha(&jogador1, &jogador2);
+}
+
+void criarDragoes(Jogador *jogador) {
+    int num_dragoes;
+    
+    printf("Quantos dragoes deseja criar? (max %d): ", MAX_DRAGOES);
+    scanf("%d", &num_dragoes);
+    
+    if(num_dragoes > MAX_DRAGOES) {
+        num_dragoes = MAX_DRAGOES;
+    }
+    
+    for(int i = 0; i < num_dragoes; i++) {
+        char nome[MAX_NOME];
+        printf("Nome do Dragao %d: ", i + 1);
+        scanf("%s", nome);
+        
+        jogador->dragoes[jogador->num_dragoes] = criarDragao(nome);
+        jogador->num_dragoes++;
+    }
+}
+
+Dragao criarDragao(char *nome) {
+    Dragao d;
+    
+    strcpy(d.nome, nome);
+    d.forca = rand() % 50 + 50;      // 50-100
+    d.vida = rand() % 100 + 100;     // 100-200
+    d.defesa = rand() % 30 + 20;     // 20-50
+    d.velocidade = rand() % 40 + 10; // 10-50
+    
+    printf("Dragao %s criado! Forca: %d, Vida: %d, Defesa: %d, Velocidade: %d\n",
+           d.nome, d.forca, d.vida, d.defesa, d.velocidade);
+    
+    return d;
+}
+
+void mostrarDragoes(Jogador jogador) {
+    printf("\nDragoes de %s:\n", jogador.nome);
+    for(int i = 0; i < jogador.num_dragoes; i++) {
+        printf("%d. %s (Vida: %d, Forca: %d, Defesa: %d, Velocidade: %d)\n",
+               i + 1, jogador.dragoes[i].nome, jogador.dragoes[i].vida,
+               jogador.dragoes[i].forca, jogador.dragoes[i].defesa,
+               jogador.dragoes[i].velocidade);
+    }
+}
+
+void batalha(Jogador *jogador1, Jogador *jogador2) {
+    int rodada = 1;
+    
+    printf("\n=== INICIO DA BATALHA ===\n");
+    
+    while(jogador1->num_dragoes > 0 && jogador2->num_dragoes > 0) {
+        printf("\n--- Rodada %d ---\n", rodada);
+        
+        // Mostrar dragões disponíveis
+        mostrarDragoes(*jogador1);
+        mostrarDragoes(*jogador2);
+        
+        // Jogador 1 escolhe dragão
+        int escolha1, escolha2;
+        printf("\n%s, escolha seu dragao (1-%d): ", jogador1->nome, jogador1->num_dragoes);
+        scanf("%d", &escolha1);
+        escolha1--; // Ajustar para índice 0-based
+        
+        printf("%s, escolha seu dragao (1-%d): ", jogador2->nome, jogador2->num_dragoes);
+        scanf("%d", &escolha2);
+        escolha2--; // Ajustar para índice 0-based
+        
+        // Realizar combate
+        Dragao *dragao1 = &jogador1->dragoes[escolha1];
+        Dragao *dragao2 = &jogador2->dragoes[escolha2];
+        
+        printf("\n%s (%s) vs %s (%s)\n", 
+               dragao1->nome, jogador1->nome, 
+               dragao2->nome, jogador2->nome);
+        
+        // Determinar quem ataca primeiro baseado na velocidade
+        Dragao *atacante, *defensor;
+        if(dragao1->velocidade >= dragao2->velocidade) {
+            atacante = dragao1;
+            defensor = dragao2;
+        } else {
+            atacante = dragao2;
+            defensor = dragao1;
+        }
+        
+        // Turno de combate
+        int turno = 1;
+        while(dragao1->vida > 0 && dragao2->vida > 0) {
+            printf("\nTurno %d:\n", turno);
+            
+            // Primeiro ataque
+            int dano = calcularDano(*atacante, *defensor);
+            defensor->vida -= dano;
+            printf("%s ataca %s causando %d de dano! Vida restante: %d\n",
+                   atacante->nome, defensor->nome, dano, defensor->vida);
+            
+            if(defensor->vida <= 0) {
+                printf("%s foi derrotado!\n", defensor->nome);
+                break;
+            }
+            
+            // Trocar atacante e defensor para o próximo turno
+            Dragao *temp = atacante;
+            atacante = defensor;
+            defensor = temp;
+            
+            turno++;
+        }
+        
+        // Verificar vencedor do combate
+        if(dragao1->vida <= 0) {
+            printf("\n%s venceu o combate!\n", dragao2->nome);
+            jogador2->pontos++;
+            // Remover dragão derrotado
+            for(int i = escolha1; i < jogador1->num_dragoes - 1; i++) {
+                jogador1->dragoes[i] = jogador1->dragoes[i + 1];
+            }
+            jogador1->num_dragoes--;
+        } else {
+            printf("\n%s venceu o combate!\n", dragao1->nome);
+            jogador1->pontos++;
+            // Remover dragão derrotado
+            for(int i = escolha2; i < jogador2->num_dragoes - 1; i++) {
+                jogador2->dragoes[i] = jogador2->dragoes[i + 1];
+            }
+            jogador2->num_dragoes--;
+        }
+        
+        rodada++;
+    }
+    
+    // Mostrar resultado final
+    printf("\n=== FIM DA BATALHA ===\n");
+    printf("Pontuacao final:\n");
+    printf("%s: %d pontos\n", jogador1->nome, jogador1->pontos);
+    printf("%s: %d pontos\n", jogador2->nome, jogador2->pontos);
+    
+    if(jogador1->pontos > jogador2->pontos) {
+        printf("\n%s VENCEU A GUERRA DOS DRAGOES!\n", jogador1->nome);
+    } else if(jogador2->pontos > jogador1->pontos) {
+        printf("\n%s VENCEU A GUERRA DOS DRAGOES!\n", jogador2->nome);
+    } else {
+        printf("\nA GUERRA TERMINOU EM EMPATE!\n");
+    }
+}
+
+int calcularDano(Dragao atacante, Dragao defensor) {
+    int dano_base = atacante.forca;
+    int reducao = defensor.defesa / 3;
+    int dano_final = dano_base - reducao;
+    
+    // Dano mínimo
+    if(dano_final < 5) {
+        dano_final = 5;
+    }
+    
+    // Chance de crítico (10%)
+    if(rand() % 100 < 10) {
+        dano_final *= 2;
+        printf("ATAQUE CRITICO! ");
+    }
+    
+    return dano_final;
+}
